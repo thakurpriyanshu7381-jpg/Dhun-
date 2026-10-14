@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Dhun – Music Management</title>
+  <meta name="description"
+    content="Dhun – Your premium music management experience. Discover, play, and manage your music." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net https://www.youtube.com https://accounts.google.com; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://i.ytimg.com https://img.youtube.com https://*.googleusercontent.com https://lastfm.freetls.fastly.net https://*.last.fm https://is1-ssl.mzstatic.com https://is2-ssl.mzstatic.com https://is3-ssl.mzstatic.com https://is4-ssl.mzstatic.com https://is5-ssl.mzstatic.com; media-src 'self' blob: data: https://audio-ssl.itunes.apple.com; connect-src 'self' wss://broker.emqx.io:8084 wss://broker.hivemq.com:8884 https://*; frame-src 'self' https://www.youtube.com https://accounts.google.com;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
+  <link rel="stylesheet" href="style.css?v=31.0" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('vibe-theme');
+        if (t && t !== 'default') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+
+      // If user opened directly via file://, show banner and offer redirect to http://localhost:3000
+      // to eliminate YouTube Error 153 (YouTube blocks media playback on file:// protocol)
+      if (window.location.protocol === 'file:') {
+        var banner = document.getElementById('file-protocol-banner');
+        if (banner) banner.style.display = 'block';
+        
+        // Try to detect if server is running, then auto-redirect
+        fetch('http://127.0.0.1:3000/api/songs', { mode: 'cors' })
+          .then(function(res) {
+            if (res.ok && confirm('YouTube blocks playback on file:// protocol. Redirect to http://localhost:3000?')) {
+              window.location.replace('http://localhost:3000');
+            }
+          })
+          .catch(function() {});
+      }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- Localhost Notice if opened via file:// -->
+  <div id="file-protocol-banner" style="display:none;background:linear-gradient(90deg,#ff416c,#ff4b2b);color:#fff;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;z-index:99999;position:sticky;top:0;box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+    <span>⚠️ You opened Dhun using <code>file://</code>. YouTube blocks media playback on <code>file://</code> with Error 153.</span>
+    <button onclick="window.location.href='http://localhost:3000'" style="color:#fff;text-decoration:underline;margin-left:10px;background:rgba(0,0,0,0.3);padding:3px 10px;border-radius:6px;font-weight:700;border:none;cursor:pointer;">Open via http://localhost:3000 🚀</button>
+  </div>
+
+  <!-- Ambient Orbs -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FULL-PAGE DEDICATED LOGIN & GATEWAY LANDING SCREEN
+       ══════════════════════════════════════════════════════════ -->
+  <div id="login-gate-screen" class="login-gate-screen" style="display:none">
+    <div class="gate-container">
+      
+      <!-- Brand & Music Showcase Column (Left on Desktop) -->
+      <div class="gate-hero-col">
+        <div class="gate-brand">
+          <img src="logo.png" alt="Dhun Logo" class="gate-brand-icon" />
+          <span class="gate-brand-name">Dhun</span>
+        </div>
+        <h1 class="gate-hero-headline">Your Universe of Music.<br><span class="gate-gradient-text">Private, Isolated & Live.</span></h1>
+        <p class="gate-hero-sub">Step into a next-generation high-fidelity music experience. Zero data collision, real-time Listen Together rooms, and complete personal library isolation.</p>
+
+        <!-- Animated Vinyl Graphic -->
+        <div class="gate-vinyl-wrap" aria-hidden="true">
+          <div class="gate-vinyl-disc">
+            <div class="gate-vinyl-grooves"></div>
+            <div class="gate-vinyl-center">
+              <img src="logo.png" alt="Dhun Logo" class="gate-vinyl-logo" />
+            </div>
+          </div>
+          <div class="gate-aura-ring"></div>
+        </div>
+
+        <!-- Highlights Checklist -->
+        <div class="gate-perks-list">
+          <div class="gate-perk-item">
+            <span class="gate-perk-icon">🔒</span>
+            <div>
+              <p class="gate-perk-title">100% Private Profiles</p>
+              <p class="gate-perk-desc">Your playlists, likes & stats are strictly isolated</p>
+            </div>
+          </div>
+          <div class="gate-perk-item">
+            <span class="gate-perk-icon">🎧</span>
+            <div>
+              <p class="gate-perk-title">Global Listen Together</p>
+              <p class="gate-perk-desc">Live cross-device Jam rooms with synchronized playback</p>
+            </div>
+          </div>
+          <div class="gate-perk-item">
+            <span class="gate-perk-icon">⚡</span>
+            <div>
+              <p class="gate-perk-title">Stream & Local Audio</p>
+              <p class="gate-perk-desc">Drop audio from PC or stream high-fidelity YouTube tracks</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentication Card (Right on Desktop) -->
+      <div class="gate-auth-col">
+        <div class="glass-card gate-auth-card">
+          <div class="gate-auth-header">
+            <h2 class="gate-auth-title" id="gate-title">Welcome to Dhun</h2>
+            <p class="gate-auth-subtitle" id="gate-subtitle">Sign in or create an account to unlock your private music suite</p>
+          </div>
+
+          <!-- Google Sign-In Button -->
+          <button class="google-auth-btn gate-google-btn" id="gate-google-btn" onclick="handleGoogleSignIn(true)" title="Continue with Google">
+            <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+
+          <div class="auth-divider">
+            <span>OR CONTINUE WITH EMAIL</span>
+          </div>
+
+          <!-- Saved Profiles Quick Sign In List -->
+          <div id="gate-saved-profiles" style="display:none;margin-bottom:14px;"></div>
+
+          <!-- Tabs Switcher -->
+          <div class="auth-tab-group" id="gate-tab-group">
+            <button class="auth-tab-btn active" id="gate-tab-signin" onclick="switchGateTab('signin')">Sign In</button>
+            <button class="auth-tab-btn" id="gate-tab-signup" onclick="switchGateTab('signup')">Create Account</button>
+          </div>
+
+          <!-- Sign In Form -->
+          <form id="gate-form-signin" class="auth-panel" onsubmit="event.preventDefault();handleGateEmailSignIn()">
+            <div class="auth-form-group">
+              <label class="auth-input-label" for="gate-signin-email">Email Address</label>
+              <input class="form-input" id="gate-signin-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="auth-form-group" style="margin-top:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label class="auth-input-label" for="gate-signin-password" style="margin-bottom:0">Password</label>
+                <a href="javascript:void(0)" onclick="switchGateTab('forgot')" class="auth-forgot-link">Forgot Password?</a>
+              </div>
+              <input class="form-input" id="gate-signin-password" type="password" placeholder="••••••••" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn-primary auth-action-btn" style="margin-top:22px">
+              <span>Sign In & Enter Dhun</span>
+            </button>
+            <div class="auth-switch-prompt" style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-3);">
+              Don't have an account? <a href="javascript:void(0)" onclick="switchGateTab('signup')" style="color:var(--accent);font-weight:600;text-decoration:none;">Create Account</a>
+            </div>
+          </form>
+
+          <!-- Sign Up Form (Create Account) -->
+          <form id="gate-form-signup" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleGateEmailSignUp()">
+            <div class="auth-form-group">
+              <label class="auth-input-label" for="gate-signup-name">Full Name</label>
+              <input class="form-input" id="gate-signup-name" type="text" placeholder="e.g. Mayank Verma" required autocomplete="name" />
+            </div>
+            <div class="auth-form-group" style="margin-top:12px">
+              <label class="auth-input-label" for="gate-signup-email">Email Address</label>
+              <input class="form-input" id="gate-signup-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="auth-form-group" style="margin-top:12px">
+              <label class="auth-input-label" for="gate-signup-password">Password</label>
+              <input class="form-input" id="gate-signup-password" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div class="auth-form-group" style="margin-top:12px">
+              <label class="auth-input-label" for="gate-signup-confirm-password">Confirm Password</label>
+              <input class="form-input" id="gate-signup-confirm-password" type="password" placeholder="Confirm your password" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div class="auth-form-group" style="margin-top:12px">
+              <label class="auth-input-label">Avatar Color Theme</label>
+              <div class="avatar-palette-picker" id="gate-signup-avatar-picker">
+                <!-- Color dots -->
+              </div>
+            </div>
+            <button type="submit" class="btn-primary auth-action-btn" style="margin-top:22px">
+              <span>Create Account & Enter Dhun</span>
+            </button>
+            <div class="auth-switch-prompt" style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-3);">
+              Already have an account? <a href="javascript:void(0)" onclick="switchGateTab('signin')" style="color:var(--accent);font-weight:600;text-decoration:none;">Sign In</a>
+            </div>
+          </form>
+
+          <!-- Forgot Password Form -->
+          <form id="gate-form-forgot" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleForgotPassword(true)">
+            <div style="text-align:left;margin-bottom:14px;">
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">Password Recovery</span>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--text-2);">Enter your email address and we'll generate a secure password reset link.</p>
+            </div>
+            <div class="auth-form-group">
+              <label class="auth-input-label" for="gate-forgot-email">Account Email Address</label>
+              <input class="form-input" id="gate-forgot-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div id="gate-forgot-status" style="display:none;margin-top:12px;"></div>
+            <button type="submit" id="gate-forgot-btn" class="btn-primary auth-action-btn" style="margin-top:18px">
+              <span>Send Reset Link</span>
+            </button>
+            <div style="text-align:center;margin-top:16px;">
+              <button type="button" class="auth-back-link" onclick="switchGateTab('signin')">
+                ← Back to Login
+              </button>
+            </div>
+          </form>
+
+          <!-- Reset Password Form -->
+          <form id="gate-form-reset" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleResetPassword(true)">
+            <input type="text" name="username" autocomplete="username" style="display:none" aria-hidden="true" tabindex="-1" />
+            <div style="text-align:left;margin-bottom:14px;">
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">Reset Password</span>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--text-2);">Create a new, strong password to regain access to your account.</p>
+            </div>
+            <input type="hidden" id="gate-reset-token" value="" />
+            <div class="auth-form-group">
+              <label class="auth-input-label" for="gate-reset-password">New Password</label>
+              <input class="form-input" id="gate-reset-password" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div class="auth-form-group" style="margin-top:12px">
+              <label class="auth-input-label" for="gate-reset-confirm-password">Confirm New Password</label>
+              <input class="form-input" id="gate-reset-confirm-password" type="password" placeholder="Repeat new password" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div id="gate-reset-status" style="display:none;margin-top:12px;"></div>
+            <button type="submit" id="gate-reset-btn" class="btn-primary auth-action-btn" style="margin-top:18px">
+              <span>Update Password & Sign In</span>
+            </button>
+            <div style="text-align:center;margin-top:16px;">
+              <button type="button" class="auth-back-link" onclick="switchGateTab('signin')">
+                ← Back to Login
+              </button>
+            </div>
+          </form>
+
+          <!-- Guest Exploration Option -->
+          <div class="gate-guest-wrap">
+            <button type="button" class="gate-guest-btn" onclick="continueAsGuestFromGate()">
+              <span>Or explore preview as Guest →</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="app-shell" id="app">
+    <!-- Backdrop for mobile drawer navigation -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+    <!-- ════════════════════════════════════
+       LEFT SIDEBAR
+  ════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <img src="logo.png" alt="Dhun Logo" class="logo-icon" />
+        <span class="logo-text">Dhun</span>
+      </div>
+
+      <!-- Main Navigation -->
+      <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+        <p class="nav-section-label">Menu</p>
+        <button class="nav-item active" id="nav-home" onclick="navigate('home')" aria-label="Home">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" id="nav-search" onclick="closePlaylistView();navigate('search')" aria-label="Search">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+            <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <span>Discover</span>
+        </button>
+        <button class="nav-item" id="nav-library" onclick="navigate('library')" aria-label="Library">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M19 11H5M19 6H5M19 16H5M19 21H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <span>Library</span>
+        </button>
+        <button class="nav-item" id="nav-player" onclick="navigate('player')" aria-label="Now Playing">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+          <span>Now Playing</span>
+        </button>
+        <button class="nav-item" id="nav-profile" onclick="navigate('profile')" aria-label="Profile">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" />
+          </svg>
+          <span>Profile</span>
+        </button>
+
+        <!-- Quick Action: Listen Together -->
+        <button class="nav-item sidebar-jam-btn" id="listen-together-sidebar-btn" onclick="openListenTogetherModal()" aria-label="Listen Together with Friends" style="margin-top:10px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(6,182,212,0.15));border:1px solid rgba(6,182,212,0.35);color:var(--text-1);font-weight:600">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+          </svg>
+          <span id="jam-sidebar-btn-text">🎧 Listen Together</span>
+          <span class="jam-pulse-dot" id="jam-sidebar-live-dot" style="display:none;margin-left:auto;"></span>
+          <span class="jam-count-badge" id="jam-sidebar-count-badge" style="display:none;margin-left:auto;background:#10b981;color:#fff;font-size:11px;font-weight:700;padding:1px 6px;border-radius:10px;">0</span>
+        </button>
+
+        <p class="nav-section-label" style="margin-top:28px">Your Playlists</p>
+        <div id="sidebar-playlists">
+          <!-- Populated dynamically from API -->
+          <button class="nav-item playlist-item" style="color:var(--text-muted)" onclick="createPlaylist()">
+            <div class="pl-dot" style="background:rgba(255,255,255,0.1);border:1.5px dashed rgba(255,255,255,0.3)">
+            </div>
+            <span>New Playlist</span>
+            <span>+</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Sidebar User -->
+      <div class="sidebar-user" onclick="navigate('profile')">
+        <div class="su-avatar" id="su-avatar">👤</div>
+        <div class="su-info">
+          <p class="su-name" id="su-name">My Profile</p>
+          <p class="su-role" id="su-role">Music Collector</p>
+        </div>
+        <button class="su-settings" aria-label="Settings">⚙</button>
+      </div>
+
+    </aside>
+
+    <!-- ════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════ -->
+    <main class="main-content" id="main-content">
+
+      <!-- ── Sticky Top Bar ── -->
+      <header class="topbar" id="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="breadcrumb" id="breadcrumb">Home</div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Button to Add Song from PC directly without manual input -->
+          <button class="topbar-pc-btn" id="add-pc-topbar-btn" onclick="triggerAddSongFromPC()" title="Add song from PC (auto-detects title, artist & duration)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Add from PC</span>
+          </button>
+
+          <button class="topbar-icon-btn" aria-label="Manual Add Song" onclick="showAddSongModal()" title="Manual input form">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+              <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+
+          <!-- Theme Switcher -->
+          <div class="theme-switcher" id="theme-switcher">
+            <button class="theme-btn topbar-icon-btn" id="theme-toggle-btn" onclick="toggleThemePanel()"
+              aria-label="Change theme" aria-expanded="false" title="Change theme">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="theme-panel" id="theme-panel" style="display:none">
+              <div class="theme-panel-title">🎨 Appearance</div>
+              <button class="theme-option active" id="theme-opt-default" onclick="setTheme('default')">
+                <div class="theme-swatch swatch-default"></div>
+                <span class="theme-label theme-label-default">Default</span>
+                <span class="theme-check" id="check-default">✓</span>
+              </button>
+              <button class="theme-option" id="theme-opt-dark" onclick="setTheme('dark')">
+                <div class="theme-swatch swatch-dark"></div>
+                <span class="theme-label theme-label-dark">Dark</span>
+                <span class="theme-check" id="check-dark" style="display:none">✓</span>
+              </button>
+              <button class="theme-option" id="theme-opt-light" onclick="setTheme('light')">
+                <div class="theme-swatch swatch-light"></div>
+                <span class="theme-label theme-label-light">Light</span>
+                <span class="theme-check" id="check-light" style="display:none">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <button class="topbar-icon-btn" id="notif-btn" aria-label="Notifications"
+            onclick="toggleNotifPanel()" aria-expanded="false" aria-haspopup="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+          </button>
+
+          <!-- Notification Dropdown Panel -->
+          <div class="notif-panel glass-card" id="notif-panel" role="dialog" aria-label="Notifications" style="display:none">
+            <div class="notif-panel-header">
+              <span class="notif-panel-title">🔔 Notifications</span>
+              <button class="notif-mark-all" onclick="markAllRead()" aria-label="Mark all as read">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notif-list">
+              <div class="notif-empty"><div class="notif-empty-icon">🔕</div><p>You're all caught up!</p></div>
+            </div>
+            <div class="notif-footer">
+              <button class="notif-clear-all" onclick="clearAllNotifs()">Clear All</button>
+            </div>
+          </div>
+
+          <button class="topbar-avatar" id="topbar-avatar-btn" onclick="toggleUserMenu()" aria-label="Open user account menu">👤</button>
+
+          <!-- User Account & Switch Profile Popover -->
+          <div class="user-menu-popover glass-card" id="user-menu-popover" style="display:none">
+            <div class="ump-header">
+              <div class="ump-avatar" id="ump-avatar">👤</div>
+              <div class="ump-info">
+                <p class="ump-name" id="ump-name">Guest User</p>
+                <p class="ump-email" id="ump-email">guest@dhun.local</p>
+                <span class="ump-badge" id="ump-badge">Guest Mode</span>
+              </div>
+            </div>
+            <div id="ump-accounts-list" style="display:none"></div>
+            <div class="ump-divider"></div>
+            <div class="ump-actions">
+              <button class="ump-item" onclick="navigate('profile');toggleUserMenu(false)">
+                <span>👤 My Profile & Stats</span>
+              </button>
+              <button class="ump-item" id="ump-auth-trigger" onclick="openAuthModal();toggleUserMenu(false)">
+                <span>✨ Sign In / Switch User</span>
+              </button>
+              <button class="ump-item ump-danger" id="ump-signout-btn" onclick="signOutUser();toggleUserMenu(false)" style="display:none">
+                <span>🚪 Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ══ PAGE: HOME ══════════════════════════ -->
+      <section class="page active" id="page-home">
+
+        <!-- Hero Banner -->
+        <div class="hero-banner" id="hero-banner">
+          <div class="hero-bg"><img id="hero-bg-img" src="album3.jpg" alt="" aria-hidden="true" />
+            <div class="hero-overlay"></div>
+          </div>
+          <div class="hero-content">
+            <span class="hero-tag" id="hero-tag">🎵 Now in Library</span>
+            <h1 class="hero-title" id="hero-title">Tujhko Jo Paaya</h1>
+            <p class="hero-sub" id="hero-sub">Mohit Chauhan / Pritam · Crook · Bollywood</p>
+            <div class="hero-actions">
+              <button class="btn-primary" onclick="openPlayer(0)" id="hero-play-btn">▶ Play Now</button>
+              <button class="btn-secondary" onclick="toggleLike(this,null)" aria-label="Like this song">♡
+                Like</button>
+            </div>
+          </div>
+          <div class="hero-stats">
+            <div class="hstat"><span class="hstat-num" id="hero-stat-tracks">1</span><span class="hstat-label">Tracks</span></div>
+            <div class="hstat"><span class="hstat-num" id="hero-stat-rating">4.9★</span><span class="hstat-label">Rating</span></div>
+            <div class="hstat"><span class="hstat-num" id="hero-stat-quality">HD</span><span class="hstat-label">Audio</span></div>
+          </div>
+        </div>
+
+        <!-- Grid Layout: 3-col below hero -->
+        <div class="home-grid">
+
+          <!-- COL A: Featured Playlists + Recommended -->
+          <div class="home-col-main">
+
+            <div class="section-header">
+              <h2 class="section-title">✨ Playlists</h2>
+              <button class="see-all-btn" onclick="navigate('profile')">Manage</button>
+            </div>
+            <div class="featured-row" id="featured-playlists-row">
+              <div class="feat-card" onclick="createPlaylist()" style="cursor:pointer">
+                <div class="feat-thumb" style="background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff">+</div>
+                <div class="feat-info">
+                  <span class="feat-tag">🎵 Custom</span>
+                  <h3 class="feat-name">Create Playlist</h3>
+                  <p class="feat-meta">Organize your favorite music</p>
+                  <button class="feat-play">＋ New</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Songs Table -->
+            <div class="section-header" style="margin-top:36px">
+              <h2 class="section-title">🎯 Library Songs</h2>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select onchange="sortLibrary(this.value)" class="sort-select" aria-label="Sort songs">
+                  <option value="title">Sort: Title</option>
+                  <option value="artist">Sort: Artist</option>
+                  <option value="plays">Sort: Plays</option>
+                  <option value="rating">Sort: Rating</option>
+                </select>
+                <button class="see-all-btn" onclick="navigate('library')">View All</button>
+              </div>
+            </div>
+            <!-- Populated dynamically from API -->
+            <div class="songs-table" id="recommended-list">
+              <div class="st-header">
+                <span class="st-h st-h-num">#</span>
+                <span class="st-h">Title</span>
+                <span class="st-h">Album</span>
+                <span class="st-h">Genre</span>
+                <span class="st-h st-h-dur">Duration</span>
+                <span class="st-h st-h-act"></span>
+              </div>
+              <p style="padding:24px;color:var(--text-2)">Loading songs…</p>
+            </div>
+
+            <div class="section-header" style="margin-top:36px">
+              <h2 class="section-title">📈 Top Played</h2>
+              <button class="see-all-btn" onclick="navigate('library')">See All</button>
+            </div>
+            <!-- Populated from Charts API (Max-Heap) -->
+            <div class="trending-grid" id="trending-dynamic">
+              <p style="color:var(--text-2);padding:8px">Loading charts…</p>
+            </div>
+
+          </div><!-- /home-col-main -->
+
+          <!-- COL B: Right Panel -->
+          <div class="home-col-side">
+
+            <!-- Mood Selector -->
+            <div class="side-card glass-card">
+              <h3 class="side-card-title">🎭 Mood</h3>
+              <div class="mood-grid">
+                <button class="mood-pill active" id="mood-chill" onclick="selectMood(this)">😌 Chill</button>
+                <button class="mood-pill" id="mood-energetic" onclick="selectMood(this)">⚡ Energy</button>
+                <button class="mood-pill" id="mood-focus" onclick="selectMood(this)">🎯 Focus</button>
+                <button class="mood-pill" id="mood-romantic" onclick="selectMood(this)">💕 Romance</button>
+                <button class="mood-pill" id="mood-sad" onclick="selectMood(this)">🌧️ Melancholy</button>
+                <button class="mood-pill" id="mood-happy" onclick="selectMood(this)">🎉 Party</button>
+              </div>
+              <div class="mood-song" onclick="if(state.songs.length) openPlayerById(state.songs[0].id)">
+                <div class="ms-thumb" style="background:linear-gradient(135deg,#7c3aed,#2563eb)"><img src="album1.jpg"
+                    alt="Now Playing" /></div>
+                <div class="ms-info">
+                  <p class="ms-name" id="mood-song-name">Tujhko Jo Paaya</p>
+                  <p class="ms-artist" id="mood-song-artist">Mohit Chauhan · 5:43</p>
+                </div>
+                <button class="ms-play" onclick="event.stopPropagation();if(state.songs.length) openPlayerById(state.songs[0].id)"
+                  aria-label="Play mood song">▶</button>
+              </div>
+            </div>
+
+            <!-- Friends Listening / Listen Together Live -->
+            <div class="side-card glass-card">
+              <h3 class="side-card-title">👥 Listen Together</h3>
+              <div class="friend-item" onclick="openListenTogetherModal()" style="cursor:pointer">
+                <div class="friend-av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">🎧</div>
+                <div class="friend-info">
+                  <p class="friend-name">Synchronized Jam</p>
+                  <p class="friend-song">🎵 Real-time beat & song sync</p>
+                </div>
+                <span class="live-tag">LIVE</span>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="side-card glass-card">
+              <h3 class="side-card-title">🕐 Recently Played</h3>
+              <div id="home-recent-list">
+                <p style="padding:12px;color:var(--text-muted);font-size:12px">No recent plays yet</p>
+              </div>
+            </div>
+
+          </div><!-- /home-col-side -->
+        </div><!-- /home-grid -->
+      </section>
+
+      <!-- ══ PAGE: SEARCH ════════════════════════ -->
+      <!-- ══ PAGE: SEARCH ════════════════════════ -->
+      <section class="page" id="page-search">
+        <div class="page-header" id="search-page-header">
+          <h1 id="search-page-title">Discover Music</h1>
+          <p id="search-page-sub">Explore millions of songs — automatically synced to your Dhun Library</p>
+        </div>
+
+        <!-- Unified Search Bar -->
+        <div class="search-hero" id="search-hero-section">
+          <div class="search-hero-bar" id="search-hero-bar">
+            <span class="shi-icon" id="search-bar-icon" onclick="hideSuggestions();handleSearch(document.getElementById('search-input').value, true)" style="cursor:pointer" title="Search">🔍</span>
+            <input type="search" class="search-hero-input" id="search-input"
+              placeholder="Search YouTube Music library, artist, album, or paste YouTube link..." autocomplete="off" aria-label="Search"
+              oninput="handleSearch(this.value)"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();hideSuggestions();this.blur();handleSearch(this.value, true);}else if(event.key==='Escape'){hideSuggestions();}"
+              onfocus="showSugg()" />
+            <button type="button" class="btn-primary" onclick="hideSuggestions();handleSearch(document.getElementById('search-input').value, true)" style="padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;cursor:pointer;border:none">Search</button>
+            <button id="clear-btn" onclick="clearSearch()" style="display:none" aria-label="Clear search"
+              class="shi-clear">✕</button>
+          </div>
+          <div class="suggestions-box glass-card" id="suggestions-box-2" style="display:none"></div>
+        </div>
+
+        <!-- ── Search Results & Playlist View (Active when searching or viewing a playlist) ── -->
+        <div id="search-results-view" style="display:none">
+          <div class="section-header" id="search-results-header">
+            <h2 class="section-title">Results for "<span id="results-query"></span>"</h2>
+            <button id="delete-playlist-view-btn" class="btn-secondary"
+              style="display:none;color:#f43f5e;border-color:rgba(244,63,94,0.3);padding:6px 14px;font-size:12px;cursor:pointer;"
+              onclick="deleteCurrentOpenPlaylist()">
+              🗑️ Delete Playlist
+            </button>
+          </div>
+          <!-- Local Library / Playlist Tracks Table -->
+          <div class="songs-table" id="search-results-list"></div>
+
+          <!-- Online Catalog Results Section -->
+          <div id="search-online-section" style="margin-top:28px;display:none">
+            <div class="section-header">
+              <h2 class="section-title" id="search-online-heading">🌐 Online Catalog Results</h2>
+              <span class="yt-results-badge" id="search-online-count">Tracks</span>
+            </div>
+            <div class="yt-cards-grid" id="search-online-grid"></div>
+          </div>
+        </div>
+
+        <!-- ── Discover Feeds Container (Hidden during active search and playlist view) ── -->
+        <div id="discover-feed-container">
+          <!-- YouTube Music Results / Feed Grid -->
+          <div id="yt-music-view">
+            <div class="section-header" style="margin-top:10px">
+              <h2 class="section-title" id="yt-results-title">✨ Recommended For You</h2>
+              <span class="yt-results-badge" id="yt-results-count">Curated Mix</span>
+            </div>
+            <div class="yt-cards-grid" id="yt-music-grid">
+              <!-- Populated dynamically via renderYTMusicGrid() -->
+            </div>
+          </div>
+
+          <!-- Recent Searches & Browse Categories -->
+          <div id="search-default-view">
+            <div class="section-header">
+              <h2 class="section-title">🕐 Recent Searches</h2><button class="see-all-btn" onclick="clearRecent()">Clear
+                All</button>
+            </div>
+            <div class="recent-chips" id="recent-list">
+              <div class="recent-chip" onclick="selectSuggestion('Kesariya')">🕐 Kesariya <button
+                  onclick="event.stopPropagation();this.parentElement.remove()" aria-label="Remove">✕</button></div>
+              <div class="recent-chip" onclick="selectSuggestion('Arijit Singh')">🕐 Arijit Singh <button
+                  onclick="event.stopPropagation();this.parentElement.remove()" aria-label="Remove">✕</button></div>
+              <div class="recent-chip" onclick="selectSuggestion('Blinding Lights')">🕐 Blinding Lights <button
+                  onclick="event.stopPropagation();this.parentElement.remove()" aria-label="Remove">✕</button></div>
+            </div>
+
+            <!-- Categories -->
+            <div class="section-header" style="margin-top:32px">
+              <h2 class="section-title">🎨 Browse Categories</h2>
+            </div>
+            <div class="categories-grid">
+              <div class="cat-card" style="background:linear-gradient(135deg,#7c3aed,#2563eb)"
+                onclick="searchCategory('Pop')"><span class="cat-emoji">🎤</span>
+                <p>Pop</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#0ea5e9,#06b6d4)"
+                onclick="searchCategory('Electronic')"><span class="cat-emoji">⚡</span>
+                <p>Electronic</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#f97316,#fbbf24)"
+                onclick="searchCategory('Bollywood')"><span class="cat-emoji">🎶</span>
+                <p>Bollywood</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#ec4899,#f97316)"
+                onclick="searchCategory('Punjabi')"><span class="cat-emoji">⚡</span>
+                <p>Punjabi</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#10b981,#0ea5e9)"
+                onclick="searchCategory('Lo-Fi')"><span class="cat-emoji">☕</span>
+                <p>Lo-Fi</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#6366f1,#7c3aed)"
+                onclick="searchCategory('Rock')"><span class="cat-emoji">🎸</span>
+                <p>Rock</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#f43f5e,#ec4899)"
+                onclick="searchCategory('Romantic')"><span class="cat-emoji">💖</span>
+                <p>Romantic</p>
+              </div>
+              <div class="cat-card" style="background:linear-gradient(135deg,#f59e0b,#10b981)"
+                onclick="searchCategory('Hip-Hop')"><span class="cat-emoji">🎧</span>
+                <p>Hip-Hop</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ PAGE: PLAYER ════════════════════════ -->
+      <section class="page" id="page-player">
+        <div class="player-page-layout">
+
+          <!-- Left: Album Art + Info -->
+          <div class="player-left">
+
+            <!-- ── Song / Video Mode Toggle Pill ── -->
+            <div class="sv-toggle-wrap">
+              <div class="sv-toggle-pill" role="group" aria-label="Playback Mode">
+                <button class="sv-toggle-btn active" id="sv-btn-song" onclick="setSongVideoMode('song')" aria-pressed="true">Song</button>
+                <button class="sv-toggle-btn" id="sv-btn-video" onclick="setSongVideoMode('video')" aria-pressed="false">Video</button>
+              </div>
+            </div>
+
+            <!-- ── Video Player Panel (shown in Video mode) ── -->
+            <div class="player-video-panel" id="player-video-panel" style="display:none;">
+              <div class="pvp-inner">
+                <!-- YouTube iframe lives here in video mode -->
+                <div class="pvp-frame-wrap" id="pvp-frame-wrap">
+                  <div class="pvp-placeholder" id="pvp-placeholder">
+                    <div class="pvp-ph-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity="0.4"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg>
+                    </div>
+                    <p class="pvp-ph-text">Loading video…</p>
+                  </div>
+                  <!-- YouTube Audio/Video Engine Dock directly inside video frame wrap -->
+                  <div id="yt-player-dock" class="yt-player-dock">
+                    <div id="yt-hidden-player" style="width:100%;height:100%;"></div>
+                    <!-- Clean Interactive Video Overlay: Click to play/pause, hover center badge, fs button -->
+                    <div class="pvp-dock-overlay" id="pvp-dock-overlay" onclick="togglePlay()" title="Click to Play/Pause">
+                      <button class="pvp-fs-btn" id="pvp-dock-fs" onclick="togglePVPFullscreen(event)" title="Fullscreen" aria-label="Fullscreen">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                      </button>
+                      <div class="pvp-center-badge" id="pvp-center-badge">
+                        <span id="pvp-badge-icon">▶</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Video Song Info Bar -->
+                <div class="pvp-info-bar">
+                  <div class="pvp-info-left">
+                    <p class="pvp-title" id="pvp-title">Song Title</p>
+                    <p class="pvp-artist" id="pvp-artist">Artist · Album</p>
+                  </div>
+                  <div class="pvp-info-actions">
+                    <button class="pvp-action-btn" onclick="toggleLike(this, null)" title="Like" aria-label="Like">♡</button>
+                    <button class="pvp-action-btn" onclick="if(state.currentSong) enqueueSong(state.currentSong.id, event)" title="Add to Queue" aria-label="Queue">＋</button>
+                    <button class="pvp-action-btn pvp-mode-back" onclick="setSongVideoMode('song')" title="Back to Song View" aria-label="Song mode" style="width:auto;padding:0 10px;font-size:12px;border-radius:14px;">♫ Song</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 7 Media Player Style Beat-Reactive Flow Visualizer -->
+            <div class="flow-visualizer-wrap" id="flow-visualizer-wrap">
+              <!-- Live Canvas Visualizer -->
+              <canvas id="flow-visualizer-canvas"></canvas>
+
+              <!-- Floating Live Reaction Stream -->
+              <div class="reaction-stream-container" id="reaction-stream"></div>
+
+              <!-- Top Controls: Visualizer Presets -->
+              <div class="visualizer-top-bar">
+                <div class="visualizer-badge">
+                  <span class="viz-pulse-dot" id="viz-status-dot"></span>
+                  <span id="viz-mode-title">Cosmic Waveform</span>
+                </div>
+                <div class="visualizer-presets" role="group" aria-label="Visualizer Presets">
+                  <button class="viz-preset-btn active" id="viz-preset-cosmic" onclick="setVisualizerPreset('cosmic')" title="Cosmic Waveform Pulse">Cosmic</button>
+                  <button class="viz-preset-btn" id="viz-preset-alchemy" onclick="setVisualizerPreset('alchemy')" title="Windows Media Player Alchemy Flow">Alchemy</button>
+                  <button class="viz-preset-btn" id="viz-preset-aurora" onclick="setVisualizerPreset('aurora')" title="Fluid Aurora Waves">Aurora</button>
+                  <button class="viz-preset-btn" id="viz-preset-neonbars" onclick="setVisualizerPreset('neonbars')" title="Spectrum Equalizer Bars">Spectrum</button>
+                  <button class="viz-preset-btn" id="viz-preset-hyperspace" onclick="setVisualizerPreset('hyperspace')" title="Hyperspace Warp Speed">Hyperspace</button>
+                  <button class="viz-preset-btn" id="viz-preset-liquidplasma" onclick="setVisualizerPreset('liquidplasma')" title="Liquid Plasma Morph">Plasma</button>
+                  <button class="viz-preset-btn" id="viz-preset-kaleido" onclick="setVisualizerPreset('kaleido')" title="Kaleidoscopic Mandala Bloom">Kaleido</button>
+                  <button class="viz-preset-btn" id="viz-preset-cybergrid" onclick="setVisualizerPreset('cybergrid')" title="Retro Synthwave Cyber Grid">Cyber Grid</button>
+                </div>
+              </div>
+
+              <!-- Floating Glassmorphic Album Artwork Badge -->
+              <div class="visualizer-album-card" id="visualizer-album-card" title="Now Playing Album Art">
+                <img id="player-album-img" src="album1.jpg" alt="Album Art" onerror="this.onerror=null;this.src='album1.jpg'" />
+                <div class="viz-album-glow"></div>
+              </div>
+
+              <!-- Bottom Beat Rhythm & Spectrum Meter -->
+              <div class="visualizer-bottom-bar">
+                <div class="viz-beat-meter">
+                  <span class="viz-beat-label">BEAT ENERGY</span>
+                  <div class="viz-beat-bar"><div class="viz-beat-fill" id="viz-beat-fill"></div></div>
+                </div>
+                <div class="eq-bars" id="equalizer">
+                  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+            <div class="player-song-info">
+              <div>
+                <h2 class="player-title" id="player-song-title">Tujhko Jo Paaya</h2>
+                <p class="player-artist" id="player-song-artist">Mohit Chauhan / Pritam · Crook</p>
+                <!-- Active Listen Together Friends Stack -->
+                <div class="jam-listening-stack" id="player-jam-stack" style="display:none" onclick="openListenTogetherModal()" title="Click to open session lobby"></div>
+              </div>
+              <button class="heart-btn" id="player-heart" onclick="toggleLike(this,null)" aria-label="Like">♡</button>
+            </div>
+
+            <!-- Dhun Player Hub: Song Info, Listening Stats, Similar Dhun & Vibe Board -->
+            <!-- Dhun Player Hub: Song Info, Listening Stats, Similar Dhun & Vibe Board -->
+            <div class="dhun-hub-panel lyrics-panel" id="dhun-player-hub">
+              <!-- Header & Segmented Tab Navigation -->
+              <div class="dhun-hub-header">
+                <div class="dhun-hub-tabs" role="tablist">
+                  <button class="dhun-tab-btn active" id="tab-btn-info" onclick="switchDhunHubTab('info')" role="tab" aria-selected="true" title="Song Info & Audio Details">
+                    <span class="tab-icon">ℹ️</span>
+                    <span class="tab-text">Song Info</span>
+                  </button>
+                  <button class="dhun-tab-btn" id="tab-btn-stats" onclick="switchDhunHubTab('stats')" role="tab" aria-selected="false" title="Personal Listening Stats">
+                    <span class="tab-icon">📈</span>
+                    <span class="tab-text">Stats</span>
+                  </button>
+                  <button class="dhun-tab-btn" id="tab-btn-similar" onclick="switchDhunHubTab('similar')" role="tab" aria-selected="false" title="Smart Similar Songs from Library">
+                    <span class="tab-icon">✨</span>
+                    <span class="tab-text">Similar Dhun</span>
+                    <span class="hub-count-pill" id="hub-similar-count">0</span>
+                  </button>
+                  <button class="dhun-tab-btn" id="tab-btn-vibe" onclick="switchDhunHubTab('vibe')" role="tab" aria-selected="false" title="Dhun Vibe & Mood Acoustics">
+                    <span class="tab-icon">🎨</span>
+                    <span class="tab-text">Vibe & Mood</span>
+                    <span class="hub-live-dot" title="Live vibe atmosphere"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content Panes Container -->
+              <div class="dhun-hub-body" id="dhun-hub-body">
+
+                <!-- 1. Song Info Pane (Default) -->
+                <div class="dhun-pane active" id="pane-info" role="tabpanel">
+                  <div class="dhun-info-hero" style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+                    <img id="hub-info-art" src="album1.jpg" alt="Album Cover" onerror="this.onerror=null;this.src='album1.jpg'" style="width:72px;height:72px;border-radius:10px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);flex-shrink:0;" />
+                    <div style="flex:1;min-width:0;">
+                      <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;">YouTube Music Album Photo</span>
+                      <h3 id="hub-info-title" style="margin:2px 0 4px;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-1);">Song Title</h3>
+                      <p id="hub-info-artist" style="margin:0;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Artist · Album</p>
+                    </div>
+                  </div>
+                  <div class="dhun-meta-grid">
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">💿</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">ALBUM</span>
+                        <span class="meta-txt" id="hub-meta-album">Crook</span>
+                      </div>
+                    </div>
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">🏷️</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">GENRE</span>
+                        <span class="meta-txt" id="hub-meta-genre">Bollywood / Romance</span>
+                      </div>
+                    </div>
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">🎧</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">AUDIO QUALITY</span>
+                        <span class="meta-txt" id="hub-meta-quality">320 kbps Studio HQ</span>
+                      </div>
+                    </div>
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">📅</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">YEAR</span>
+                        <span class="meta-txt" id="hub-meta-year">2024</span>
+                      </div>
+                    </div>
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">⏱️</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">DURATION</span>
+                        <span class="meta-txt" id="hub-meta-duration">5:43</span>
+                      </div>
+                    </div>
+                    <div class="dhun-meta-card">
+                      <span class="meta-icon">💾</span>
+                      <div class="meta-content">
+                        <span class="meta-lbl">AUDIO SOURCE</span>
+                        <span class="meta-txt" id="hub-meta-source">High-Fidelity Stream</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dhun-tags-row">
+                    <span class="dhun-chip">#LosslessAudio</span>
+                    <span class="dhun-chip">#Stereo44.1kHz</span>
+                    <span class="dhun-chip">#DhunMaster</span>
+                    <span class="dhun-chip" id="hub-meta-codec">MP3 Audio</span>
+                  </div>
+                </div>
+
+                <!-- 2. Listening Stats Pane (Option 5) -->
+                <div class="dhun-pane" id="pane-stats" role="tabpanel">
+                  <div class="dhun-stats-grid">
+                    <div class="dhun-stat-card highlight">
+                      <div class="stat-top">
+                        <span class="stat-icon">🔥</span>
+                        <span class="stat-badge" id="hub-stat-badge">Fresh Discovery</span>
+                      </div>
+                      <div class="stat-num" id="hub-stat-plays">0</div>
+                      <div class="stat-lbl">Times Played</div>
+                      <div class="stat-bar-track"><div class="stat-bar-fill" id="hub-stat-play-fill" style="width: 20%"></div></div>
+                    </div>
+                    <div class="dhun-stat-card">
+                      <div class="stat-top"><span class="stat-icon">⏳</span></div>
+                      <div class="stat-num" id="hub-stat-time">0m 00s</div>
+                      <div class="stat-lbl">Total Time Listened</div>
+                      <span class="stat-sub" id="hub-stat-last">Live tracking</span>
+                    </div>
+                    <div class="dhun-stat-card">
+                      <div class="stat-top"><span class="stat-icon">❤️</span></div>
+                      <div class="stat-num" id="hub-stat-liked">Library Track</div>
+                      <div class="stat-lbl">Favorite Status</div>
+                      <span class="stat-sub" id="hub-stat-first">Saved in Dhun</span>
+                    </div>
+                    <div class="dhun-stat-card">
+                      <div class="stat-top"><span class="stat-icon">⚡</span></div>
+                      <div class="stat-num" id="hub-stat-completion">92%</div>
+                      <div class="stat-lbl">Avg. Retention</div>
+                      <span class="stat-sub">High replay affinity</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Smart Similar Dhun Pane (Option 4) -->
+                <div class="dhun-pane" id="pane-similar" role="tabpanel">
+                  <div class="dhun-similar-list" id="dhun-similar-list">
+                    <!-- Populated dynamically via updateDhunHub() -->
+                  </div>
+                </div>
+
+                <!-- 4. Dhun Vibe & Mood Acoustics (Option 6) -->
+                <div class="dhun-pane" id="pane-vibe" role="tabpanel">
+                  <div class="dhun-vibe-container">
+                    <div class="dhun-vibe-card">
+                      <div class="vibe-card-top">
+                        <span class="vibe-card-emoji" id="hub-vibe-emoji">✨</span>
+                        <div>
+                          <span class="vibe-card-title" id="hub-vibe-title">Harmonic Melody</span>
+                          <span class="vibe-card-desc" id="hub-vibe-desc">Warm • Emotional • Acoustic</span>
+                        </div>
+                        <span class="vibe-sync-tag">⚡ Syncs with Top Beat Visualizer</span>
+                      </div>
+                    </div>
+
+                    <!-- 4 Live Precision Dynamics Meters -->
+                    <div class="dhun-vibe-metrics">
+                      <div class="vibe-meter">
+                        <div class="meter-head">
+                          <span class="meter-name">⚡ Energy Level</span>
+                          <span class="meter-val" id="vibe-val-energy">72%</span>
+                        </div>
+                        <div class="meter-track"><div class="meter-fill energy" id="vibe-fill-energy" style="width: 72%"></div></div>
+                      </div>
+                      <div class="vibe-meter">
+                        <div class="meter-head">
+                          <span class="meter-name">🌿 Acoustic Warmth</span>
+                          <span class="meter-val" id="vibe-val-warmth">88%</span>
+                        </div>
+                        <div class="meter-track"><div class="meter-fill warmth" id="vibe-fill-warmth" style="width: 88%"></div></div>
+                      </div>
+                      <div class="vibe-meter">
+                        <div class="meter-head">
+                          <span class="meter-name">🪩 Dance & Groove</span>
+                          <span class="meter-val" id="vibe-val-groove">65%</span>
+                        </div>
+                        <div class="meter-track"><div class="meter-fill groove" id="vibe-fill-groove" style="width: 65%"></div></div>
+                      </div>
+                      <div class="vibe-meter">
+                        <div class="meter-head">
+                          <span class="meter-name">🌌 Depth & Resonance</span>
+                          <span class="meter-val" id="vibe-val-depth">85%</span>
+                        </div>
+                        <div class="meter-track"><div class="meter-fill depth" id="vibe-fill-depth" style="width: 85%"></div></div>
+                      </div>
+                    </div>
+
+                    <!-- 8 Curated Mood Palettes -->
+                    <div class="dhun-vibe-selector">
+                      <span class="vibe-choose-lbl">Tune Dhun Mood & Top Visualizer Palette:</span>
+                      <div class="vibe-chips" id="dhun-vibe-chips">
+                        <button class="vibe-chip active" onclick="setCustomSongVibe('romantic', this)">💖 Romantic</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('chill', this)">🌿 Chill</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('energetic', this)">⚡ Energetic</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('melancholic', this)">🌧️ Melancholy</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('party', this)">🎉 Party</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('sufi', this)">🕊️ Sufi Soul</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('cyberpunk', this)">🌌 Cyberpunk</button>
+                        <button class="vibe-chip" onclick="setCustomSongVibe('acoustic', this)">🍃 Acoustic</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Hidden backward-compatibility node for legacy callers -->
+                <div id="lyrics-container" style="display:none"></div>
+              </div>
+            </div>
+
+            <!-- Progress + Controls -->
+            <div class="player-controls-panel">
+              <div class="progress-section">
+                <span id="current-time" class="time-label">0:00</span>
+                <div class="progress-track" id="progress-track" onclick="seekSong(event)" aria-label="Seek">
+                  <div class="progress-fill" id="progress-fill"></div>
+                  <div class="progress-thumb" id="progress-thumb"></div>
+                </div>
+                <span id="total-time" class="time-label">5:43</span>
+              </div>
+              <div class="controls-row">
+                <button class="ctrl-btn" id="shuffle-btn" onclick="toggleShuffle()" aria-label="Shuffle">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <button class="ctrl-btn" onclick="prevSong()" aria-label="Previous">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 4H8V20H6V4ZM9.5 12L18 4V20L9.5 12Z" />
+                  </svg>
+                </button>
+                <button class="play-pause-main" id="play-pause-btn" onclick="togglePlay()" aria-label="Play/Pause">
+                  <svg id="play-icon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 3l14 9-14 9V3z" />
+                  </svg>
+                  <svg id="pause-icon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"
+                    style="display:none">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                </button>
+                <button class="ctrl-btn" onclick="nextSong()" aria-label="Next">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 4H16V20H18V4ZM14.5 12L6 4V20L14.5 12Z" />
+                  </svg>
+                </button>
+                <button class="ctrl-btn" id="repeat-btn" onclick="toggleRepeat()" aria-label="Repeat">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Player Secondary Controls & Utility Bar -->
+              <div class="player-utilities-bar">
+                <!-- In-Player Volume Control Bar -->
+                <div class="player-vol-wrap">
+                  <button class="player-vol-icon-btn" id="player-vol-mute" onclick="toggleMute()" ondblclick="toggleBoostVolume()" aria-label="Mute or Unmute" title="Mute / Unmute (Double-click for 150% Boost)">
+                    <span id="player-vol-icon">🔊</span>
+                  </button>
+                  <div class="player-vol-track-wrap">
+                    <input type="range" class="vol-slider" id="player-vol-slider" min="0" max="150" value="75" aria-label="Volume Slider" oninput="setVolume(this.value)" />
+                  </div>
+                  <span class="player-vol-label" id="player-vol-pct">75%</span>
+                  <button type="button" class="vol-boost-btn" id="player-vol-boost-btn" onclick="toggleBoostVolume()" title="Quick 150% Volume Boost (VLC Style)">🚀 150%</button>
+                </div>
+
+                <!-- Social & Community Actions -->
+                <div class="social-row">
+                  <button class="social-btn" id="social-like" onclick="toggleLike(this,null)" aria-label="Like">♡
+                    <span id="social-like-count">1</span></button>
+                  <button class="social-btn jam-social-btn" id="social-jam-btn" onclick="openListenTogetherModal()" aria-label="Listen Together">
+                    🎧 <span id="social-jam-text">Listen Together</span>
+                  </button>
+                  <button class="social-btn" aria-label="Add to Queue" onclick="if(state.currentSong) enqueueSong(state.currentSong.id, event)">＋ <span>Queue</span></button>
+                  <button class="social-btn" id="player-add-playlist-btn" aria-label="Add to Playlist" onclick="if(state.currentSong) addToPlaylistPrompt(state.currentSong.id, event)" title="Add to Playlist">⋯ <span>Playlist</span></button>
+                  <button class="social-btn social-del-btn" id="player-delete-song-btn" onclick="if(state.currentSong) deleteSong(state.currentSong.id, event)" aria-label="Remove from library" title="Remove song from library">🗑️ <span>Remove</span></button>
+                  <button class="social-btn" aria-label="Share" onclick="showToast('Share link copied to clipboard 🔗')">🔗 <span>Share</span></button>
+                </div>
+
+                <!-- Live Reaction Dock -->
+                <div class="jam-live-dock" id="jam-player-reactions" title="Send live reaction">
+                  <span class="jam-dock-label">React:</span>
+                  <button class="jam-react-btn" onclick="sendJamReaction('🔥')" title="Fire">🔥</button>
+                  <button class="jam-react-btn" onclick="sendJamReaction('❤️')" title="Love">❤️</button>
+                  <button class="jam-react-btn" onclick="sendJamReaction('🎉')" title="Party">🎉</button>
+                  <button class="jam-react-btn" onclick="sendJamReaction('🎵')" title="Vibe">🎵</button>
+                  <button class="jam-react-btn" onclick="sendJamReaction('👏')" title="Clap">👏</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Queue + Related -->
+          <div class="player-right">
+            <div class="queue-panel glass-card">
+              <h3 class="qp-title">🎵 Up Next</h3>
+              <div class="queue-list" id="queue-list">
+                <p style="padding:16px;color:var(--text-muted);font-size:13px">Queue is empty — click ＋ to queue songs</p>
+              </div>
+            </div>
+
+            <div class="related-panel glass-card" style="margin-top:16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <h3 class="qp-title" style="margin:0;display:flex;align-items:center;gap:8px">✨ Auto Recommendations</h3>
+              </div>
+              <div id="related-list">
+                <!-- Dynamically populated from library -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══ PAGE: PROFILE ═══════════════════════ -->
+      <section class="page" id="page-profile">
+        <!-- Cover -->
+        <div class="profile-cover">
+          <img src="album2.jpg" alt="Profile cover" class="pcover-img" id="pcover-img" />
+          <div class="pcover-overlay"></div>
+          <button class="pcover-change" id="pcover-change-btn" aria-label="Change cover" onclick="openProfileCoverModal()" style="z-index:99;cursor:pointer;pointer-events:auto;">📷 Change Cover</button>
+        </div>
+
+        <div class="profile-body">
+          <!-- Left: Info -->
+          <div class="profile-left">
+            <div class="pav-large" id="pav-large">👤</div>
+            <h1 class="pname" id="pname-display">My Profile</h1>
+            <p class="pbio" id="pbio-display">🎵 High-fidelity music listener & collector</p>
+            <div class="profile-actions">
+              <button class="btn-primary" onclick="toggleEditProfile()" id="edit-profile-btn">✏️ Edit Profile</button>
+              <button class="btn-secondary" onclick="openProfileCoverModal()" id="pcover-action-btn" title="Customize Profile Banner">🎨 Change Cover</button>
+              <button class="btn-secondary" onclick="autoGenerateUserProfileLibrary(authState.currentUser, true)" id="auto-gen-profile-lib-btn" title="Auto-Generate / Refresh Profile Library via YouTube Music Suggestions" style="display:inline-flex;align-items:center;gap:6px">⚡ Auto-Generate Library (YT)</button>
+              <button class="btn-secondary" onclick="triggerProfileCloudSync(this)" id="sync-profile-btn" title="Sync Profile & Playlists Across Devices">☁️ Sync Devices</button>
+              <button class="btn-secondary" onclick="showToast('Profile link copied 🔗')" aria-label="Share profile">🔗 Share</button>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="edit-form glass-card" id="edit-form" style="display:none">
+              <h3>Edit Profile</h3>
+              <div style="margin-bottom:12px">
+                <button type="button" class="btn-secondary" onclick="openProfileCoverModal()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;">🎨 Change Cover Banner</button>
+              </div>
+              <input class="form-input" type="text" id="edit-name" value="My Profile" placeholder="Display Name"
+                aria-label="Display name" />
+              <textarea class="form-input form-textarea" id="edit-bio"
+                aria-label="Bio">🎵 High-fidelity music listener & collector</textarea>
+              <div class="form-btns">
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+                <button class="btn-secondary" onclick="toggleEditProfile()">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Real Dynamic Stats -->
+            <div class="stats-row glass-card">
+              <div class="stat"><span class="stat-num" id="prof-songs-count">0</span><span class="stat-lbl">Songs</span></div>
+              <div class="stat-div"></div>
+              <div class="stat"><span class="stat-num" id="prof-playlists-count">0</span><span class="stat-lbl">Playlists</span></div>
+              <div class="stat-div"></div>
+              <div class="stat"><span class="stat-num" id="prof-likes-count">0</span><span class="stat-lbl">Liked</span></div>
+              <div class="stat-div"></div>
+              <div class="stat"><span class="stat-num" id="prof-plays-count">0</span><span class="stat-lbl">Total Plays</span></div>
+            </div>
+          </div>
+
+          <!-- Right: Tabs -->
+          <div class="profile-right">
+            <div class="profile-tabs" role="tablist">
+              <button class="tab-btn active" role="tab" onclick="switchTab(this,'playlists')"
+                id="tab-playlists">Playlists</button>
+              <button class="tab-btn" role="tab" onclick="switchTab(this,'liked')" id="tab-liked">Liked Songs</button>
+              <button class="tab-btn" role="tab" onclick="switchTab(this,'activity')"
+                id="tab-activity">Activity Log</button>
+            </div>
+
+            <div class="tab-content active" id="tab-content-playlists">
+              <div class="content-grid" id="profile-playlists-grid">
+                <!-- Dynamically populated via renderProfilePlaylists() -->
+                <div class="grid-card create-card" onclick="createPlaylist()">
+                  <div class="gc-thumb create-thumb">+</div>
+                  <p class="gc-name">New Playlist</p>
+                  <p class="gc-meta">Create</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-content" id="tab-content-liked">
+              <!-- Dynamically populated via refreshLikedSongs() -->
+              <p style="padding:24px;color:var(--text-2);text-align:center">No liked songs yet ♡</p>
+            </div>
+
+            <div class="tab-content" id="tab-content-activity">
+              <div class="comment-list" id="profile-activity-list">
+                <div class="comment-card glass-card">
+                  <div class="comment-av" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">🎵</div>
+                  <div class="comment-body">
+                    <p class="comment-author">Personal Music Hub</p>
+                    <p class="comment-text">Library synchronized with high-precision beat flow, song analytics, and live Dhun vibe aura.</p>
+                    <p class="comment-time">Active Session</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div><!-- /profile-right -->
+        </div><!-- /profile-body -->
+      </section>
+
+      <!-- ══ PAGE: LIBRARY ═══════════════════════ -->
+      <section class="page" id="page-library">
+
+        <div class="page-header">
+          <h1>📚 Your Library</h1>
+          <p>All your songs, sorted and ready to play</p>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="lib-stats-bar glass-card" id="lib-stats-bar">
+          <div class="lib-stat"><span class="lib-stat-num" id="lib-total">—</span><span class="lib-stat-lbl">Songs</span></div>
+          <div class="lib-stat-div"></div>
+          <div class="lib-stat"><span class="lib-stat-num" id="lib-artists">—</span><span class="lib-stat-lbl">Artists</span></div>
+          <div class="lib-stat-div"></div>
+          <div class="lib-stat"><span class="lib-stat-num" id="lib-albums">—</span><span class="lib-stat-lbl">Albums</span></div>
+          <div class="lib-stat-div"></div>
+          <div class="lib-stat"><span class="lib-stat-num" id="lib-duration">—</span><span class="lib-stat-lbl">Total Time</span></div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="lib-controls">
+          <div class="genre-filter-row" id="lib-genre-filters">
+            <button class="filter-chip active" id="lib-filter-all" onclick="filterLibraryGenre(this,'all')">All</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Electronic')">⚡ Electronic</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Pop')">🎤 Pop</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Indie')">🎸 Indie</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Ambient')">🌊 Ambient</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Techno')">🎛️ Techno</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Lo-Fi')">☕ Lo-Fi</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Dance')">🕺 Dance</button>
+            <button class="filter-chip" onclick="filterLibraryGenre(this,'Chill')">😌 Chill</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+            <select onchange="sortLibraryPage(this.value)" class="sort-select" aria-label="Sort library">
+              <option value="title">Sort: Title</option>
+              <option value="artist">Sort: Artist</option>
+              <option value="plays">Sort: Most Played</option>
+              <option value="rating">Sort: Top Rated</option>
+            </select>
+            <button class="btn-primary" onclick="autoGenerateUserProfileLibrary(authState.currentUser, true)" style="padding:8px 16px;font-size:13px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#e11d48,#7c3aed);border:none;box-shadow:0 2px 10px rgba(225,29,72,0.3)" title="Auto-Generate Profile Library via YouTube Music Suggestions">
+              ⚡ Auto-Generate via YT
+            </button>
+            <button class="btn-primary btn-add-pc" onclick="triggerAddSongFromPC()" style="padding:8px 18px;font-size:13px;display:inline-flex;align-items:center;gap:6px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              📁 Add from PC
+            </button>
+            <button class="btn-secondary" onclick="showAddSongModal()" style="padding:8px 14px;font-size:13px" title="Manual Input Form">Manual</button>
+          </div>
+        </div>
+
+        <!-- Full Songs Table -->
+        <div class="songs-table" id="library-list">
+          <div class="st-header">
+            <span class="st-h st-h-num">#</span>
+            <span class="st-h">Title</span>
+            <span class="st-h">Album</span>
+            <span class="st-h">Genre</span>
+            <span class="st-h st-h-dur">Duration</span>
+            <span class="st-h st-h-act"></span>
+          </div>
+          <p style="padding:32px;color:var(--text-2);text-align:center">Loading library…</p>
+        </div>
+
+      </section>
+
+    </main><!-- /main-content -->
+
+    <!-- ════════════════════════════════════
+       BOTTOM PLAYER BAR (persistent)
+  ════════════════════════════════════ -->
+    <footer class="player-bar glass-card" id="player-bar">
+
+      <!-- Left: Song info -->
+      <div class="pb-left" onclick="navigate('player')" style="cursor:pointer">
+        <div class="pb-thumb" id="pb-thumb" style="background:linear-gradient(135deg,#7c3aed,#2563eb)">
+          <img id="pb-img" src="album1.jpg" alt="Now playing" onerror="this.onerror=null;this.src='album1.jpg'" />
+        </div>
+        <div class="pb-info">
+          <p class="pb-song" id="pb-song">Tujhko Jo Paaya</p>
+          <p class="pb-artist" id="pb-artist">Mohit Chauhan / Pritam</p>
+        </div>
+        <button class="pb-like like-btn" onclick="toggleLike(this,event)" aria-label="Like">♡</button>
+      </div>
+
+      <!-- Center: Controls + Progress -->
+      <div class="pb-center">
+        <div class="pb-controls">
+          <button class="pb-ctrl" id="pb-shuffle" onclick="toggleShuffle()" aria-label="Shuffle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button class="pb-ctrl" onclick="prevSong()" aria-label="Previous">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 4H8V20H6V4ZM9.5 12L18 4V20L9.5 12Z" />
+            </svg>
+          </button>
+          <button class="pb-play" id="pb-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+            <svg id="pb-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5 3l14 9-14 9V3z" />
+            </svg>
+            <svg id="pb-pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+            </svg>
+          </button>
+          <button class="pb-ctrl" onclick="nextSong()" aria-label="Next">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 4H16V20H18V4ZM14.5 12L6 4V20L14.5 12Z" />
+            </svg>
+          </button>
+          <button class="pb-ctrl" id="pb-repeat" onclick="toggleRepeat()" aria-label="Repeat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <div class="pb-progress-wrap">
+          <span id="pb-cur-time" class="pb-time">1:23</span>
+          <div class="pb-progress" id="pb-progress" onclick="seekSong(event)" aria-label="Seek">
+            <div class="pb-fill" id="pb-fill"></div>
+            <div class="pb-thumb-dot" id="pb-thumb-dot"></div>
+          </div>
+          <span id="pb-total-time" class="pb-time">3:45</span>
+        </div>
+      </div>
+
+      <!-- Right: Volume + Extras -->
+      <div class="pb-right">
+        <button class="pb-ctrl" aria-label="Add to Playlist" title="Add to Playlist" onclick="if(state.currentSong) addToPlaylistPrompt(state.currentSong.id, event)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 12H3M16 6H3M16 18H3M18 9v6M15 12h6"/>
+          </svg>
+        </button>
+        <button class="pb-ctrl" aria-label="Audio Equalizer" title="Audio Equalizer (E)" onclick="openEqualizerModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </button>
+        <button class="pb-ctrl" aria-label="Keyboard Shortcuts" title="Keyboard Shortcuts (?)" onclick="openShortcutsModal()">
+          <span style="font-size:15px;">⌨️</span>
+        </button>
+        <button class="pb-ctrl" aria-label="Queue" onclick="navigate('player')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18V5l12-2v13M9 9l12-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="volume-control">
+          <span class="vol-icon" onclick="toggleMute()" ondblclick="toggleBoostVolume()" style="cursor:pointer" title="Click to mute / Double-click for 150% boost">🔊</span>
+          <input type="range" class="vol-slider" id="vol-slider" min="0" max="150" value="75" aria-label="Volume (up to 150%)"
+            oninput="setVolume(this.value)" />
+        </div>
+      </div>
+
+    </footer>
+
+    <!-- ══ MOBILE BOTTOM APP NAVIGATION (Phone / Tablet) ══ -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile navigation">
+      <button class="mob-nav-btn active" id="mob-nav-home" onclick="navigate('home')">
+        <span class="mob-nav-icon">🏠</span>
+        <span class="mob-nav-label">Home</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-search" onclick="navigate('search')">
+        <span class="mob-nav-icon">🔍</span>
+        <span class="mob-nav-label">Discover</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-library" onclick="navigate('library')">
+        <span class="mob-nav-icon">📚</span>
+        <span class="mob-nav-label">Library</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-player" onclick="navigate('player')">
+        <span class="mob-nav-icon">🎵</span>
+        <span class="mob-nav-label">Playing</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-jam" onclick="openListenTogetherModal()">
+        <span class="mob-nav-icon">🎧</span>
+        <span class="mob-nav-label">Jam</span>
+      </button>
+    </nav>
+
+  </div><!-- /app-shell -->
+
+  <!-- ══ ADD SONG MODAL ══════════════════════════════ -->
+  <div id="add-song-modal" style="display:none;position:fixed;inset:0;z-index:9990;
+     background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+     align-items:center;justify-content:center;">
+    <div class="glass-card" style="width:min(480px,90vw);padding:32px;border-radius:20px;position:relative">
+      <button onclick="hideAddSongModal()" style="position:absolute;top:16px;right:16px;
+      background:none;border:none;color:var(--text-2);font-size:20px;cursor:pointer">✕</button>
+      <h2 style="margin:0 0 20px;font-size:1.4rem">🎵 Add New Song</h2>
+      <!-- Direct PC Audio Upload Dropzone -->
+      <div class="pc-upload-dropzone" onclick="triggerAddSongFromPC();hideAddSongModal();" role="button" tabindex="0" title="Click to choose audio files from PC">
+        <div class="dropzone-icon">📁</div>
+        <div style="font-weight:700;font-size:15px;color:var(--text-1)">Choose Audio File from PC</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:2px">Auto-extracts title, artist & duration — no typing needed!</div>
+        <span class="dropzone-badge">⚡ Instant Auto-Import</span>
+      </div>
+      <div class="or-divider"><span>OR MANUAL INPUT</span></div>
+      <div style="display:grid;gap:12px">
+        <input class="form-input" id="new-title" type="text" placeholder="Song Title *" aria-label="Title" />
+        <input class="form-input" id="new-artist" type="text" placeholder="Artist Name *" aria-label="Artist" />
+        <input class="form-input" id="new-album" type="text" placeholder="Album" aria-label="Album" />
+        <input class="form-input" id="new-genre" type="text" placeholder="Genre" aria-label="Genre" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <input class="form-input" id="new-duration" type="number" placeholder="Duration (min)" step="0.1" min="0.5"
+            max="60" aria-label="Duration" />
+          <input class="form-input" id="new-rating" type="number" placeholder="Rating (1-5)" step="0.1" min="1" max="5"
+            aria-label="Rating" />
+        </div>
+      </div>
+      <div class="form-btns" style="margin-top:24px">
+        <button class="btn-primary" onclick="submitAddSong()">Add to Library</button>
+        <button class="btn-secondary" onclick="hideAddSongModal()">Cancel</button>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--text-2)">
+        Data stored in C backend via Doubly Linked List + BST + Hash Table
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ LISTEN TOGETHER MODAL ═════════════════════════ -->
+  <div id="listen-together-modal" class="jam-modal-backdrop" style="display:none">
+    <div class="glass-card jam-modal-card">
+      <button class="jam-modal-close" onclick="closeListenTogetherModal()" aria-label="Close modal">✕</button>
+
+      <!-- Header -->
+      <div class="jam-modal-header">
+        <div class="jam-header-icon-wrap">
+          <span class="jam-header-icon">🎧</span>
+        </div>
+        <div>
+          <h2 class="jam-modal-title">Listen Together</h2>
+          <p class="jam-modal-sub">Jam with friends in real-time with synchronized music & live reactions</p>
+        </div>
+      </div>
+
+      <!-- Tab Buttons (Host vs Join) when no active room -->
+      <div id="jam-tabs" class="jam-tab-group">
+        <button class="jam-tab-btn active" id="jam-tab-host" onclick="switchJamTab('host')">Host a Jam</button>
+        <button class="jam-tab-btn" id="jam-tab-join" onclick="switchJamTab('join')">Join Session</button>
+      </div>
+
+      <!-- Tab Content: Host a Room -->
+      <form id="jam-panel-host" class="jam-panel" onsubmit="event.preventDefault();startJamSession()">
+        <input type="text" name="username" autocomplete="username" style="display:none" aria-hidden="true" tabindex="-1" />
+        <div class="jam-promo-box">
+          <div class="jam-feature-badge">⚡ Instant Tab & Friend Sync</div>
+          <p class="jam-promo-text">Start a session as the DJ. Whenever you play, pause, seek, or change songs, everyone in the room syncs automatically in real-time.</p>
+        </div>
+        <div class="jam-form-group">
+          <label class="jam-input-label" for="jam-host-name">Your DJ Name</label>
+          <input class="form-input" id="jam-host-name" type="text" value="You (DJ)" placeholder="Your DJ nickname" />
+        </div>
+        <div class="jam-form-group" style="margin-top:10px">
+          <label class="jam-input-label" for="jam-host-password">Room Password (Optional)</label>
+          <input class="form-input" id="jam-host-password" type="password" placeholder="Leave empty for public room" autocomplete="off" />
+        </div>
+        <div class="jam-options">
+          <label class="jam-checkbox-label">
+            <input type="checkbox" id="jam-allow-control" checked />
+            <span>Allow friends to change songs & seek</span>
+          </label>
+        </div>
+        <button type="submit" class="btn-primary jam-action-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+          </svg>
+          <span>Start Jam Room</span>
+        </button>
+      </form>
+
+      <!-- Tab Content: Join a Room -->
+      <form id="jam-panel-join" class="jam-panel" style="display:none" onsubmit="event.preventDefault();joinJamSession()">
+        <input type="text" name="username" autocomplete="username" style="display:none" aria-hidden="true" tabindex="-1" />
+        <div class="jam-promo-box">
+          <div class="jam-feature-badge">🔗 Connect to a Friend's Jam</div>
+          <p class="jam-promo-text">Enter your friend's room code or paste their invite link to jump into their stream instantly.</p>
+        </div>
+        <div class="jam-form-group">
+          <label class="jam-input-label" for="jam-guest-name">Your Nickname</label>
+          <input class="form-input" id="jam-guest-name" type="text" placeholder="e.g. Alex" />
+        </div>
+        <div class="jam-form-group" style="margin-top:12px">
+          <label class="jam-input-label" for="jam-room-code-input">Room Code or Invite Link</label>
+          <input class="form-input" id="jam-room-code-input" type="text" placeholder="e.g. DHUN-4821" style="text-transform:uppercase;letter-spacing:1.5px;font-weight:700" />
+        </div>
+        <div class="jam-form-group" style="margin-top:12px">
+          <label class="jam-input-label" for="jam-join-password">Room Password (If protected)</label>
+          <input class="form-input" id="jam-join-password" type="password" placeholder="Enter room password if set" autocomplete="off" />
+        </div>
+        <button type="submit" class="btn-primary jam-action-btn">
+          <span>Join Friend's Jam</span>
+        </button>
+      </form>
+
+      <!-- In-Session View (Shown when in active room) -->
+      <div id="jam-panel-active" class="jam-panel" style="display:none">
+        <div class="jam-room-banner">
+          <div class="jam-room-status">
+            <span class="jam-live-pulse"></span>
+            <span class="jam-room-id-text">Room: <strong id="jam-active-code">DHUN-0000</strong></span>
+          </div>
+          <button class="btn-copy-code" onclick="copyJamInviteLink()" title="Copy room link">
+            <span>📋 Copy Link</span>
+          </button>
+        </div>
+
+        <div class="jam-current-track-card">
+          <div class="jam-track-thumb" id="jam-sync-thumb">🎵</div>
+          <div class="jam-track-meta">
+            <span class="jam-now-label">NOW PLAYING TOGETHER</span>
+            <div class="jam-track-title" id="jam-sync-title">Tujhko Jo Paaya</div>
+            <div class="jam-track-artist" id="jam-sync-artist">Mohit Chauhan / Pritam</div>
+          </div>
+          <div class="jam-sync-pill">
+            <span class="jam-sync-dot"></span> Synced
+          </div>
+        </div>
+
+        <!-- Participants List -->
+        <div class="jam-listeners-section">
+          <div class="jam-section-title-row">
+            <span class="jam-section-title">Listeners (<span id="jam-member-count">1</span>)</span>
+            <span class="jam-sync-latency">📡 Real-Time Live Sync</span>
+          </div>
+          <div class="jam-members-list" id="jam-members-list">
+            <!-- Members dynamically injected -->
+          </div>
+        </div>
+
+        <!-- Live Reaction Bar in Room -->
+        <div class="jam-reactions-bar">
+          <span class="jam-react-label">Send Live Reaction:</span>
+          <div class="jam-reaction-emojis">
+            <button class="jam-emoji-btn" onclick="sendJamReaction('🔥')">🔥</button>
+            <button class="jam-emoji-btn" onclick="sendJamReaction('❤️')">❤️</button>
+            <button class="jam-emoji-btn" onclick="sendJamReaction('🎉')">🎉</button>
+            <button class="jam-emoji-btn" onclick="sendJamReaction('🎵')">🎵</button>
+            <button class="jam-emoji-btn" onclick="sendJamReaction('👏')">👏</button>
+            <button class="jam-emoji-btn" onclick="sendJamReaction('🚀')">🚀</button>
+          </div>
+        </div>
+
+        <!-- Live Jam Chat [T3-08] -->
+        <div class="jam-chat-wrapper">
+          <div class="jam-chat-header">
+            <span>💬 Live Jam Chat</span>
+            <span style="font-size:10.5px;color:var(--text-3);">Encrypted Room Channel</span>
+          </div>
+          <div class="jam-chat-messages" id="jam-chat-messages">
+            <div class="jam-chat-msg" style="align-self:center;font-size:11.5px;color:var(--text-3);background:none;">
+              Welcome to the Jam! Chat with fellow listeners in real-time.
+            </div>
+          </div>
+          <div class="jam-chat-input-bar">
+            <input type="text" id="jam-chat-input" class="jam-chat-input" placeholder="Type a message to room..." onkeydown="if(event.key==='Enter')sendJamChatMessage()" />
+            <button class="jam-chat-send-btn" onclick="sendJamChatMessage()">Send</button>
+          </div>
+        </div>
+
+        <div class="jam-footer-actions">
+          <button class="btn-secondary jam-leave-btn" onclick="leaveJamSession()">
+            <span>Leave Session</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ AUTHENTICATION MODAL (Google & Email Sign In / Sign Up) ══ -->
+  <div id="auth-modal" class="auth-modal-backdrop" style="display:none">
+    <div class="glass-card auth-modal-card">
+      <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close authentication modal">✕</button>
+
+      <!-- Auth Header -->
+      <div class="auth-modal-header">
+        <div class="auth-logo-badge">
+          <img src="logo.png" alt="Dhun Logo" style="width:100%;height:100%;border-radius:16px;object-fit:cover;" />
+        </div>
+        <h2 class="auth-modal-title" id="auth-modal-title">Welcome to Dhun</h2>
+        <p class="auth-modal-sub" id="auth-modal-sub">Sign in to isolate and preserve your personal likes, playlists & listening vibe</p>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <button class="google-auth-btn" id="google-auth-btn" onclick="handleGoogleSignIn()" title="Continue with Google">
+        <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="auth-divider">
+        <span>OR CONTINUE WITH EMAIL</span>
+      </div>
+
+      <!-- Auth Tabs: Sign In vs Sign Up -->
+      <div class="auth-tab-group" id="auth-tab-group">
+        <button class="auth-tab-btn active" id="auth-tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab-btn" id="auth-tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Tab Content: Sign In -->
+      <form id="auth-panel-signin" class="auth-panel" onsubmit="event.preventDefault();handleEmailSignIn()">
+        <div class="auth-form-group">
+          <label class="auth-input-label" for="signin-email">Email Address</label>
+          <input class="form-input" id="signin-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="auth-input-label" for="signin-password" style="margin-bottom:0">Password</label>
+            <a href="javascript:void(0)" onclick="switchAuthTab('forgot')" class="auth-forgot-link">Forgot Password?</a>
+          </div>
+          <input class="form-input" id="signin-password" type="password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary auth-action-btn" style="margin-top:20px">
+          <span>Sign In to Dhun</span>
+        </button>
+        <div class="auth-switch-prompt" style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-3);">
+          Don't have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signup')" style="color:var(--accent);font-weight:600;text-decoration:none;">Create Account</a>
+        </div>
+      </form>
+
+      <!-- Tab Content: Sign Up (Create Account) -->
+      <form id="auth-panel-signup" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleEmailSignUp()">
+        <div class="auth-form-group">
+          <label class="auth-input-label" for="signup-name">Full Name</label>
+          <input class="form-input" id="signup-name" type="text" placeholder="e.g. Mayank Verma" required autocomplete="name" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <label class="auth-input-label" for="signup-email">Email Address</label>
+          <input class="form-input" id="signup-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <label class="auth-input-label" for="signup-password">Password</label>
+          <input class="form-input" id="signup-password" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <label class="auth-input-label" for="signup-confirm-password">Confirm Password</label>
+          <input class="form-input" id="signup-confirm-password" type="password" placeholder="Repeat your password" required minlength="6" autocomplete="new-password" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <label class="auth-input-label">Avatar Color Theme</label>
+          <div class="avatar-palette-picker" id="signup-avatar-picker">
+            <!-- Palette generated -->
+          </div>
+        </div>
+        <button type="submit" class="btn-primary auth-action-btn" style="margin-top:20px">
+          <span>Create My Account</span>
+        </button>
+        <div class="auth-switch-prompt" style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-3);">
+          Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color:var(--accent);font-weight:600;text-decoration:none;">Sign In</a>
+        </div>
+      </form>
+
+      <!-- Tab Content: Forgot Password -->
+      <form id="auth-panel-forgot" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleForgotPassword(false)">
+        <div style="text-align:left;margin-bottom:14px;">
+          <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">Password Recovery</span>
+          <p style="margin:4px 0 0;font-size:13px;color:var(--text-2);">Enter your email address and we'll send a secure password reset link.</p>
+        </div>
+        <div class="auth-form-group">
+          <label class="auth-input-label" for="forgot-email">Account Email Address</label>
+          <input class="form-input" id="forgot-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div id="auth-forgot-status" style="display:none;margin-top:12px;"></div>
+        <button type="submit" id="auth-forgot-btn" class="btn-primary auth-action-btn" style="margin-top:18px">
+          <span>Send Reset Link</span>
+        </button>
+        <div style="text-align:center;margin-top:16px;">
+          <button type="button" class="auth-back-link" onclick="switchAuthTab('signin')">
+            ← Back to Login
+          </button>
+        </div>
+      </form>
+
+      <!-- Tab Content: Reset Password -->
+      <form id="auth-panel-reset" class="auth-panel" style="display:none" onsubmit="event.preventDefault();handleResetPassword(false)">
+        <input type="text" name="username" autocomplete="username" style="display:none" aria-hidden="true" tabindex="-1" />
+        <div style="text-align:left;margin-bottom:14px;">
+          <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">Reset Password</span>
+          <p style="margin:4px 0 0;font-size:13px;color:var(--text-2);">Set a new, strong password for your Dhun account.</p>
+        </div>
+        <input type="hidden" id="auth-reset-token" value="" />
+        <div class="auth-form-group">
+          <label class="auth-input-label" for="reset-password">New Password</label>
+          <input class="form-input" id="reset-password" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+        </div>
+        <div class="auth-form-group" style="margin-top:12px">
+          <label class="auth-input-label" for="reset-confirm-password">Confirm New Password</label>
+          <input class="form-input" id="reset-confirm-password" type="password" placeholder="Repeat new password" required minlength="6" autocomplete="new-password" />
+        </div>
+        <div id="auth-reset-status" style="display:none;margin-top:12px;"></div>
+        <button type="submit" id="auth-reset-btn" class="btn-primary auth-action-btn" style="margin-top:18px">
+          <span>Update Password & Sign In</span>
+        </button>
+        <div style="text-align:center;margin-top:16px;">
+          <button type="button" class="auth-back-link" onclick="switchAuthTab('signin')">
+            ← Back to Login
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ IN-APP GOOGLE SIGN-IN INTERFACE MODAL (AUTHENTIC GOOGLE "CHOOSE AN ACCOUNT" TEMPLATE) ══════════════ -->
+  <div id="google-auth-modal" class="auth-modal-backdrop" style="display:none" onclick="if(event.target===this)closeGoogleAuthModal()">
+    <div class="google-dialog-container">
+      
+      <!-- Top Google Bar -->
+      <div class="google-dialog-header">
+        <div class="google-header-brand">
+          <svg viewBox="0 0 24 24" width="18" height="18" class="google-g-logo">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span class="google-header-text">Sign in with Google</span>
+        </div>
+        <button class="google-dialog-close" onclick="closeGoogleAuthModal()" aria-label="Close" title="Close">✕</button>
+      </div>
+
+      <!-- Main Body: Screen 1 - Choose An Account -->
+      <div id="google-screen-chooser" class="google-dialog-body">
+        <!-- Left Column -->
+        <div class="google-body-left">
+          <h1 class="google-choose-title">Choose an account</h1>
+          <p class="google-choose-sub">to continue to <a href="javascript:void(0)" class="google-dest-link" id="google-dest-site">Dhun Music</a></p>
+        </div>
+
+        <!-- Right Column -->
+        <div class="google-body-right">
+          <div class="google-accounts-list" id="google-accounts-list">
+            <!-- Dynamic or pre-rendered accounts -->
+          </div>
+
+          <!-- Use Another Account Row -->
+          <div class="google-account-row google-add-account-row" onclick="showGoogleAddAccountScreen()" role="button" tabindex="0">
+            <div class="google-avatar-circle google-avatar-user-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#444746">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/>
+              </svg>
+            </div>
+            <div class="google-account-meta">
+              <div class="google-account-name">Use Another account</div>
+            </div>
+          </div>
+
+          <!-- Consent disclaimer -->
+          <p class="google-consent-disclaimer">
+            To continue, Google will share your name, email address, language preference, and profile picture with <span class="google-consent-host">Dhun Music</span>. Before using this app, you can review <span class="google-consent-host-2">Dhun Music</span>'s <a href="javascript:void(0)" class="google-inline-link">privacy policy</a> and <a href="javascript:void(0)" class="google-inline-link">terms of service</a>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Body: Screen 2 - Sign in / Add Account Form -->
+      <div id="google-screen-signin" class="google-dialog-body" style="display:none;">
+        <div class="google-body-left">
+          <h1 class="google-choose-title">Sign in</h1>
+          <p class="google-choose-sub">to continue to <a href="javascript:void(0)" class="google-dest-link" id="google-dest-site-2">Dhun Music</a></p>
+        </div>
+        <div class="google-body-right">
+          <form id="google-custom-signin-form" onsubmit="event.preventDefault();submitGoogleNewAccount()">
+            <div class="google-input-group">
+              <input type="email" id="google-new-email" class="google-styled-input" placeholder="Email or phone" required autocomplete="email" />
+            </div>
+            <div class="google-input-group" style="margin-top:14px;">
+              <input type="text" id="google-new-name" class="google-styled-input" placeholder="Display Name (optional)" autocomplete="name" />
+            </div>
+            <div style="font-size:12px;color:#5f6368;margin-top:12px;line-height:1.4;">
+              Not your computer? Use Guest mode to sign in privately. <a href="javascript:void(0)" onclick="closeGoogleAuthModal();enterGuestMode();" style="color:#0b57d0;text-decoration:none;">Learn more</a>
+            </div>
+            <div class="google-form-actions">
+              <button type="button" class="google-btn-text" id="google-back-to-chooser-btn" onclick="showGoogleAccountChooser()">Back</button>
+              <button type="submit" class="google-btn-blue">Next</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="google-dialog-footer">
+        <div class="google-footer-lang">
+          <span>English (United States)</span>
+          <span style="font-size:9px;margin-left:4px;">▼</span>
+        </div>
+        <div class="google-footer-links">
+          <a href="javascript:void(0)">Help</a>
+          <a href="javascript:void(0)">Privacy</a>
+          <a href="javascript:void(0)">Terms</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ IN-APP CREATE PLAYLIST MODAL ═══════════════════════ -->
+  <div id="playlist-create-modal" class="auth-modal-backdrop" style="display:none" onclick="if(event.target===this)closePlaylistCreateModal()">
+    <div class="glass-card auth-modal-card" style="width:min(440px,94vw);padding:28px">
+      <button class="auth-modal-close" onclick="closePlaylistCreateModal()" aria-label="Close">✕</button>
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:36px;margin-bottom:6px">🎵</div>
+        <h2 class="auth-modal-title" style="font-size:22px">Create New Playlist</h2>
+        <p class="auth-modal-sub">Enter a name for your personal playlist</p>
+      </div>
+      <form onsubmit="event.preventDefault();submitCreatePlaylistModal()">
+        <div class="auth-form-group">
+          <label class="auth-input-label" for="playlist-name-input">Playlist Name</label>
+          <input class="form-input" id="playlist-name-input" type="text" placeholder="e.g. Chill Vibes, Late Night Beats..." required autocomplete="off" />
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px">
+          <button type="button" class="btn-secondary" style="flex:1" onclick="closePlaylistCreateModal()">Cancel</button>
+          <button type="submit" class="btn-primary" style="flex:1.5">
+            <span>Create Playlist</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ IN-APP ADD TO PLAYLIST MODAL ═══════════════════════ -->
+  <div id="playlist-add-modal" class="auth-modal-backdrop" style="display:none" onclick="if(event.target===this)closePlaylistAddModal()">
+    <div class="glass-card auth-modal-card" style="width:min(460px,94vw);max-height:85vh;padding:26px">
+      <button class="auth-modal-close" onclick="closePlaylistAddModal()" aria-label="Close">✕</button>
+      <div style="margin-bottom:16px">
+        <h2 class="auth-modal-title" style="text-align:left;font-size:20px">Add to Playlist</h2>
+        <p class="auth-modal-sub" id="playlist-add-modal-sub" style="text-align:left;margin:4px 0 0">Select a playlist to save this track</p>
+      </div>
+      <div id="playlist-add-list" class="playlist-chooser-list">
+        <!-- Populated dynamically with playlists -->
+      </div>
+      <div style="border-top:1px solid var(--glass-border);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
+        <button class="btn-secondary" onclick="openCreatePlaylistFromAddModal()" style="font-size:13px">＋ New Playlist</button>
+        <button class="btn-secondary" onclick="closePlaylistAddModal()" style="font-size:13px">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ IN-APP CONFIRMATION MODAL ══════════════════════════ -->
+  <div id="app-confirm-modal" class="auth-modal-backdrop" style="display:none" onclick="if(event.target===this)closeConfirmModal(false)">
+    <div class="glass-card auth-modal-card" style="width:min(400px,94vw);padding:28px;text-align:center">
+      <div id="confirm-modal-icon" style="font-size:38px;margin-bottom:10px">⚠️</div>
+      <h2 class="auth-modal-title" id="confirm-modal-title" style="font-size:20px">Confirm Action</h2>
+      <p class="auth-modal-sub" id="confirm-modal-message" style="margin:8px 0 24px;font-size:13.5px">Are you sure you want to proceed?</p>
+      <div style="display:flex;gap:12px;justify-content:center">
+        <button type="button" class="btn-secondary" style="flex:1" id="confirm-modal-cancel-btn" onclick="closeConfirmModal(false)">Cancel</button>
+        <button type="button" class="btn-primary" style="flex:1" id="confirm-modal-action-btn" onclick="closeConfirmModal(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE COVER CUSTOMIZATION MODAL ════════════ -->
+  <div id="profile-cover-modal" class="auth-modal-backdrop" style="display:none" onclick="if(event.target===this)closeProfileCoverModal()">
+    <div class="auth-card glass-card" style="max-width:540px;width:92%;padding:28px 24px;border-radius:24px;position:relative;animation:gateSlideDown 0.3s cubic-bezier(0.16,1,0.3,1);">
+      <button onclick="closeProfileCoverModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;color:var(--text-3);font-size:22px;cursor:pointer;line-height:1;" aria-label="Close">✕</button>
+      
+      <div style="text-align:left;margin-bottom:18px;">
+        <h2 style="font-size:1.35rem;font-weight:800;color:var(--text-1);margin:0 0 6px;">🎨 Customize Profile Banner</h2>
+        <p style="font-size:12.5px;color:var(--text-3);margin:0;">Upload any photo from your device or choose a curated aesthetic theme.</p>
+      </div>
+
+      <!-- Live Preview -->
+      <div style="margin-bottom:18px;">
+        <p style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Live Preview</p>
+        <div style="width:100%;height:140px;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--glass-border);box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+          <img id="pcover-preview-img" src="album2.jpg" alt="Preview cover" style="width:100%;height:100%;object-fit:cover;" />
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(8,12,20,0.85));"></div>
+          <div style="position:absolute;bottom:12px;left:14px;display:flex;align-items:center;gap:10px;">
+            <div id="pcover-preview-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--grad-main);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;border:2px solid #fff;">👤</div>
+            <div>
+              <div id="pcover-preview-name" style="font-size:13px;font-weight:700;color:#fff;line-height:1.2;">My Profile</div>
+              <div style="font-size:10.5px;color:rgba(255,255,255,0.7);line-height:1.2;">Banner Preview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Option 1: Upload from PC / Phone -->
+      <div style="margin-bottom:18px;">
+        <input type="file" id="pcover-file-input" accept="image/*" style="display:none" onchange="handleCoverFileSelected(event)" />
+        <button type="button" onclick="document.getElementById('pcover-file-input').click()" style="width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--purple);background:rgba(124,58,237,0.12);color:var(--text-1);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;font-size:13.5px;transition:all 0.2s;" onmouseover="this.style.background='rgba(124,58,237,0.22)'" onmouseout="this.style.background='rgba(124,58,237,0.12)'">
+          <span style="font-size:18px;">📁</span>
+          <span>Upload Custom Photo from Device</span>
+        </button>
+      </div>
+
+      <!-- Option 2: Curated Themes -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Or Choose an Aesthetic Theme</p>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;" id="pcover-presets-grid">
+          <!-- Preset 1 -->
+          <div onclick="selectCoverPreset('album2.jpg', this)" class="pcover-preset-card selected" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid var(--purple);position:relative;height:65px;transition:all 0.2s;">
+            <img src="album2.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            <span style="position:absolute;bottom:4px;left:6px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Cyber Blue</span>
+          </div>
+          <!-- Preset 2 -->
+          <div onclick="selectCoverPreset('cover_bg.jpg', this)" class="pcover-preset-card" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;position:relative;height:65px;transition:all 0.2s;">
+            <img src="cover_bg.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            <span style="position:absolute;bottom:4px;left:6px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Neon Glow</span>
+          </div>
+          <!-- Preset 3 -->
+          <div onclick="selectCoverPreset('album1.jpg', this)" class="pcover-preset-card" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;position:relative;height:65px;transition:all 0.2s;">
+            <img src="album1.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            <span style="position:absolute;bottom:4px;left:6px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Retro Pulse</span>
+          </div>
+          <!-- Preset 4 -->
+          <div onclick="selectCoverPreset('album3.jpg', this)" class="pcover-preset-card" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;position:relative;height:65px;transition:all 0.2s;">
+            <img src="album3.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            <span style="position:absolute;bottom:4px;left:6px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Lo-Fi Gold</span>
+          </div>
+          <!-- Preset 5 -->
+          <div onclick="selectCoverPreset('cover_light_bg.jpg', this)" class="pcover-preset-card" style="cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;position:relative;height:65px;transition:all 0.2s;">
+            <img src="cover_light_bg.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            <span style="position:absolute;bottom:4px;left:6px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Bright Wave</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" class="btn-secondary" onclick="closeProfileCoverModal()" style="padding:9px 18px;">Cancel</button>
+        <button type="button" class="btn-primary" onclick="applyProfileCover()" style="padding:9px 22px;">Save & Apply ✨</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Hidden File Input for Adding Songs from PC -->
+  <input type="file" id="pc-audio-input" accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.aac,.webm,.opus" multiple style="display:none" onchange="handlePCAudioFileInput(event)" />
+
+  <!-- Drag and Drop Full Screen Overlay -->
+  <div id="pc-drag-overlay" class="drag-drop-overlay" style="display:none">
+    <div class="drag-drop-box glass-card">
+      <div style="font-size:48px;animation:pulse 1.5s infinite">🎵</div>
+      <h2 style="margin:12px 0 6px;font-size:1.6rem">Drop Audio Files Here</h2>
+      <p style="color:var(--text-2);font-size:14px">Automatically adds songs from your PC directly to your library</p>
+    </div>
+  </div>
+
+
+
+  <!-- ══ KEYBOARD SHORTCUTS MODAL [T3-04] ══ -->
+  <div id="shortcuts-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeShortcutsModal()">
+    <div class="glass-card modal-box" style="max-width:440px;width:90%;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:1.3rem;font-weight:800;">⌨️ Keyboard Shortcuts</h3>
+        <button onclick="closeShortcutsModal()" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="shortcuts-list">
+        <div class="shortcut-row"><span class="shortcut-desc">Play / Pause</span><span class="shortcut-keys"><span class="shortcut-key">Space</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Next Track</span><span class="shortcut-keys"><span class="shortcut-key">→</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Previous Track</span><span class="shortcut-keys"><span class="shortcut-key">←</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Mute / Unmute</span><span class="shortcut-keys"><span class="shortcut-key">M</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Toggle Shuffle</span><span class="shortcut-keys"><span class="shortcut-key">S</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Toggle Repeat</span><span class="shortcut-keys"><span class="shortcut-key">R</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Like / Unlike Song</span><span class="shortcut-keys"><span class="shortcut-key">L</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Toggle Queue Panel</span><span class="shortcut-keys"><span class="shortcut-key">Q</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Audio Equalizer</span><span class="shortcut-keys"><span class="shortcut-key">E</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Show Shortcuts</span><span class="shortcut-keys"><span class="shortcut-key">?</span></span></div>
+        <div class="shortcut-row"><span class="shortcut-desc">Close Modals</span><span class="shortcut-keys"><span class="shortcut-key">Esc</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 5-BAND AUDIO EQUALIZER MODAL [T5-09] ══ -->
+  <div id="equalizer-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeEqualizerModal()">
+    <div class="glass-card modal-box" style="max-width:480px;width:90%;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="margin:0;font-size:1.3rem;font-weight:800;">🎛️ Audio Equalizer</h3>
+        <button onclick="closeEqualizerModal()" class="modal-close-btn">&times;</button>
+      </div>
+      <p style="font-size:12.5px;color:var(--text-2);margin:0 0 16px 0;">Tailor your sonic experience with 5 precision hardware-modeled EQ bands.</p>
+      
+      <div class="eq-modal-body">
+        <div class="eq-presets-row">
+          <button class="eq-preset-btn active" id="eq-btn-flat" onclick="applyEqPreset('flat')">Flat</button>
+          <button class="eq-preset-btn" id="eq-btn-bass" onclick="applyEqPreset('bass')">Bass Boost</button>
+          <button class="eq-preset-btn" id="eq-btn-vocal" onclick="applyEqPreset('vocal')">Vocal Clarity</button>
+          <button class="eq-preset-btn" id="eq-btn-acoustic" onclick="applyEqPreset('acoustic')">Acoustic</button>
+          <button class="eq-preset-btn" id="eq-btn-electronic" onclick="applyEqPreset('electronic')">Electronic</button>
+        </div>
+
+        <div class="eq-bands-container">
+          <div class="eq-band-col">
+            <span class="eq-band-val" id="eq-val-0">0dB</span>
+            <input type="range" class="eq-band-slider" min="-12" max="12" step="0.5" value="0" id="eq-band-0" oninput="updateEqBand(0, this.value)" />
+            <span class="eq-band-label">60Hz</span>
+          </div>
+          <div class="eq-band-col">
+            <span class="eq-band-val" id="eq-val-1">0dB</span>
+            <input type="range" class="eq-band-slider" min="-12" max="12" step="0.5" value="0" id="eq-band-1" oninput="updateEqBand(1, this.value)" />
+            <span class="eq-band-label">250Hz</span>
+          </div>
+          <div class="eq-band-col">
+            <span class="eq-band-val" id="eq-val-2">0dB</span>
+            <input type="range" class="eq-band-slider" min="-12" max="12" step="0.5" value="0" id="eq-band-2" oninput="updateEqBand(2, this.value)" />
+            <span class="eq-band-label">1kHz</span>
+          </div>
+          <div class="eq-band-col">
+            <span class="eq-band-val" id="eq-val-3">0dB</span>
+            <input type="range" class="eq-band-slider" min="-12" max="12" step="0.5" value="0" id="eq-band-3" oninput="updateEqBand(3, this.value)" />
+            <span class="eq-band-label">4kHz</span>
+          </div>
+          <div class="eq-band-col">
+            <span class="eq-band-val" id="eq-val-4">0dB</span>
+            <input type="range" class="eq-band-slider" min="-12" max="12" step="0.5" value="0" id="eq-band-4" oninput="updateEqBand(4, this.value)" />
+            <span class="eq-band-label">16kHz</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modular Data & Utilities Layer [T2-01 to T2-07] -->
+  <script src="js/config.js?v=2.6"></script>
+  <script src="js/utils.js?v=2.6"></script>
+  <script src="js/models.js?v=2.6"></script>
+  <script src="js/state.js?v=2.6"></script>
+  <script src="js/db.js?v=2.6"></script>
+  <script src="js/api.js?v=2.6"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <script src="ytmusic_api.js?v=31.0"></script>
+  <script src="app.js?v=31.0"></script>
+  <!-- Last.fm + iTunes Global Recommendation Engine -->
+  <script src="recommend.js?v=1.0"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+
+</html>
